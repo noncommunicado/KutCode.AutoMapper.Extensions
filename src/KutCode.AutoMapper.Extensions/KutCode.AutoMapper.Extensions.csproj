@@ -17,6 +17,7 @@
         <FileVersion>1.0.0</FileVersion>
         <NeutralLanguage>en-US</NeutralLanguage>
         <PackageIcon>icon.png</PackageIcon>
+        <RootNamespace>AutoMapper</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">

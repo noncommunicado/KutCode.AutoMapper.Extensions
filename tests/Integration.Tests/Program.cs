@@ -11,18 +11,18 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.MapGet("/get-some-data-1", (IMapper autoMapper) => {
+app.MapGet("/map-from-entity", (IMapper autoMapper) => {
 		var entity = new DataEntity {Value = "entity-test-data"};
 		return autoMapper.Map<DataDto>(entity);
 	})
-	.WithName("GetSomeData1")
+	.WithName("map-from-entity")
 	.WithOpenApi();
 
-app.MapGet("/get-some-data-2", (IMapper autoMapper) => {
+app.MapGet("/map-from-model", (IMapper autoMapper) => {
 		var entity = new DataModel {Value = "model-test-data"};
 		return autoMapper.Map<DataDto>(entity);
 	})
-	.WithName("GetSomeData2")
+	.WithName("map-from-model")
 	.WithOpenApi();
 
 app.Run();
@@ -38,11 +38,11 @@ public class DataModel
 	public string Value { get; set; }
 }
 
-public class DataDto : IMapWith<DataEntity>, IMapWith<DataModel>
+public class DataDto : IMapTo<DataEntity>, IMapTo<DataModel>
 {
 	public string Value { get; set; }
-	public void Map(Profile<DataEntity> profile)
+	public void Map(MapProfileDecorator<DataEntity> decorator)
 	{
-		profile.CreateMap<DataEntity, DataDto>();
+		decorator.Profile.CreateMap<DataEntity, DataDto>();
 	}
 }

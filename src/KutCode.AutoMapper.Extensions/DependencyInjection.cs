@@ -8,6 +8,8 @@ namespace AutoMapper;
 /// </summary>
 public static class DependencyInjection
 {
+	private static Type _iMapWith = typeof(IMapWith<>);
+	
 	/// <summary>
 	/// Add all profiles from Application Domain assemblies
 	/// </summary>
@@ -19,14 +21,14 @@ public static class DependencyInjection
 	/// Add sprecified profiles from assemblies
 	/// </summary>
 	/// <param name="services">A collection of service descriptors</param>
-	/// <param name="assemblies">Assemblies to scan object inhirited from <see cref="IMapWith"/></param>
+	/// <param name="assemblies">Assemblies to scan object inhirited from <see cref="IMapTo{TDestination}"/></param>
 	public static IServiceCollection AddMappings(this IServiceCollection services, params Assembly[] assemblies)
 	{
 		services.AddAutoMapper(cfg => {
 			foreach (var assembly in assemblies) {
 				var types = assembly.GetExportedTypes()
 					.Where(type => type.GetInterfaces()
-						.Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapWith<>)))
+						.Any(i => i.IsGenericType && i.IsAssignableFrom(_iMapWith)))
 					.ToArray();
 				if (types.Length == 0) continue;
 				cfg.AddProfile(new AssemblyMappingProfile(types));

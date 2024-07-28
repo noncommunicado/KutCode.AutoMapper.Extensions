@@ -1,12 +1,15 @@
-using System.Reflection;
+using AutoMapper.Internal;
 
 namespace AutoMapper;
 
 /// <summary>
 /// Profile with all assembly's profiles
 /// </summary>
-internal class AssemblyMappingProfile : Profile 
+internal class AssemblyMappingProfile : Profile
 {
+	private readonly MapOptions _options = new();
+	public static Type GenericProfileType = typeof(MapProfileDecorator<>);
+	
 	/// <summary>
 	/// Scan assembly and sum all profiles in one
 	/// </summary>
@@ -15,35 +18,52 @@ internal class AssemblyMappingProfile : Profile
 		foreach (var type in types)
 			ManageTypeMapping(type);
 	}
-
-	private void ManageTypeMapping(Type type)
+	
+	/// <summary>
+	/// Scan assembly and sum all profiles in one
+	/// </summary>
+	/// <param name="options">Mapping options</param>
+	public AssemblyMappingProfile(MapOptions options, params Type[] types)
 	{
-		var interfaces = type.GetInterfaces()
-			.Where(x => x.Name == typeof(IMapWith<>).Name)
+		_options = options;
+		foreach (var type in types)
+			ManageTypeMapping(type);
+	}
+
+	private void ManageTypeMapping(Type interfacedObjectType)
+	{
+		var typeMapInterfaces = interfacedObjectType.GetInterfaces()
+			.Where(x => x.Name == typeof(IMapTo<>).Name)
 			.ToList();
 
-		HashSet<Type> mapWithTypes = new HashSet<Type>(interfaces.Count);
-		foreach (var inter in interfaces) {
+		HashSet<Type> typesForDefaultMap = new(typeMapInterfaces.Count);
+		foreach (var inter in typeMapInterfaces) {
 			var gens = inter.GetGenericArguments();
-			if (gens.Length == 1)
-				mapWithTypes.Add(gens[0]);
+			if (_options.ThrowOnDuplicateMappings && typesForDefaultMap.Contains(gens[0]))
+				throw new DuplicateTypeMapConfigurationException(new[] {
+					new DuplicateTypeMapConfigurationException.TypeMapConfigErrors(
+						new TypePair(interfacedObjectType, gens[0]), new []{ProfileName})
+				});
+			typesForDefaultMap.Add(gens[0]);
 		}
 
-		var instance = Activator.CreateInstance(type);
-		//Dictionary<Type, MethodInfo> overridedMethods = new(mapWithTypes.Count);
-		foreach (var methodInfo in type.GetMethods().Where(x => x.Name == nameof(IMapWith<int>.Map))) {
+		var mapMethods = interfacedObjectType.GetMethods().Where(x => x.Name == nameof(IMapTo<int>.MapTo)).ToList();
+		var instance = Activator.CreateInstance(interfacedObjectType);
+		foreach (var methodInfo in mapMethods) {
 			var genericParams = methodInfo.GetParameters()
 				.Where(x => x.ParameterType.IsGenericType)
 				.ToArray();
-			if (genericParams.Length == 1) {
-				var genArgs = genericParams[0].ParameterType.GetGenericArguments();
-				if (genArgs.Length == 1) {
-					//overridedMethods.Add(genArgs[0], methodInfo);
-					mapWithTypes.Remove(genArgs[0]);
-					methodInfo.Invoke(instance, new object?[] {this as Profile});
-				}
+			var genArgs = genericParams[0].ParameterType.GetGenericArguments();
+			if (genArgs.Length == 1) {
+				var ctorParam = Activator.CreateInstance(GenericProfileType.MakeGenericType(genArgs[0]), new object?[] {this});
+				typesForDefaultMap.Remove(genArgs[0]);
+				methodInfo.Invoke(instance, new object?[] {ctorParam});
 			}
 		}
-		
+
+		// create map by default, if no Map() method override presented
+		foreach (Type type in typesForDefaultMap)
+			if (type != interfacedObjectType)
+				CreateMap(type, interfacedObjectType);
 	}
 }
