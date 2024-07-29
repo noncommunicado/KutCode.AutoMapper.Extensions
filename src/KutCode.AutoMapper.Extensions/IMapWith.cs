@@ -6,7 +6,12 @@ namespace AutoMapper;
 /// </summary>
 public interface IMapWith<TMember>
 {
-	
+	/// <summary>
+	/// Adds Reverse mapping to <see cref="decorator.Profile"/>
+	/// </summary>
+	/// <param name="decorator">Decorated Map Profile</param>
+	public void Map(MapProfileDecorator<TMember> decorator)
+		=> decorator.Profile.CreateMap(typeof(TMember), GetType()).ReverseMap();
 }
 
 /// <summary>

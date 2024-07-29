@@ -15,22 +15,22 @@ public class ConflictMappingTests
 		Assert.Pass();
 	}
 	
-	public class ParentEntity : IMapTo<ParentEntity>
+	public class ParentEntity : IMapFrom<ParentEntity>
 	{
 		public string Value { get; set; } = "parent";
 
-		public void Map(MapProfileDecorator<ParentEntity> decorator)
+		public void MapFrom(MapProfileDecorator<ParentEntity> decorator)
 		{
 			decorator.Profile.CreateMap<ParentEntity, ParentDto>().ForMember(x => x.Value,
 				opt => opt.MapFrom(z => "1111"));
 		}
 	}
-	public record ParentDto : IMapTo<ParentEntity>
+	public record ParentDto : IMapFrom<ParentEntity>
 	{
 		public string Value { get; set; }
-		
-		
-		public void Map(MapProfileDecorator<ParentEntity> decorator)
+
+
+		public void MapFrom(MapProfileDecorator<ParentEntity> decorator)
 		{
 			decorator.Profile.CreateMap<ParentEntity, ParentDto>().ForMember(x => x.Value,
 				opt => opt.MapFrom(z => "2222"));

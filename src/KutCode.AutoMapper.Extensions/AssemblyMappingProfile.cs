@@ -1,13 +1,13 @@
-using AutoMapper.Internal;
+using System.Reflection;
 
 namespace AutoMapper;
+
 
 /// <summary>
 /// Profile with all assembly's profiles
 /// </summary>
 internal class AssemblyMappingProfile : Profile
 {
-	private readonly MapOptions _options = new();
 	public static Type GenericProfileType = typeof(MapProfileDecorator<>);
 	
 	/// <summary>
@@ -19,51 +19,64 @@ internal class AssemblyMappingProfile : Profile
 			ManageTypeMapping(type);
 	}
 	
-	/// <summary>
-	/// Scan assembly and sum all profiles in one
-	/// </summary>
-	/// <param name="options">Mapping options</param>
-	public AssemblyMappingProfile(MapOptions options, params Type[] types)
+	private sealed record TypeManageDto(Type MainObjectType, Type TypeOfMapPartner);
+	private void ManageTypeMapping(Type objectType)
 	{
-		_options = options;
-		foreach (var type in types)
-			ManageTypeMapping(type);
-	}
-
-	private void ManageTypeMapping(Type interfacedObjectType)
-	{
-		var typeMapInterfaces = interfacedObjectType.GetInterfaces()
-			.Where(x => x.Name == typeof(IMapTo<>).Name)
-			.ToList();
-
-		HashSet<Type> typesForDefaultMap = new(typeMapInterfaces.Count);
-		foreach (var inter in typeMapInterfaces) {
-			var gens = inter.GetGenericArguments();
-			if (_options.ThrowOnDuplicateMappings && typesForDefaultMap.Contains(gens[0]))
-				throw new DuplicateTypeMapConfigurationException(new[] {
-					new DuplicateTypeMapConfigurationException.TypeMapConfigErrors(
-						new TypePair(interfacedObjectType, gens[0]), new []{ProfileName})
-				});
-			typesForDefaultMap.Add(gens[0]);
-		}
-
-		var mapMethods = interfacedObjectType.GetMethods().Where(x => x.Name == nameof(IMapTo<int>.MapTo)).ToList();
-		var instance = Activator.CreateInstance(interfacedObjectType);
-		foreach (var methodInfo in mapMethods) {
-			var genericParams = methodInfo.GetParameters()
-				.Where(x => x.ParameterType.IsGenericType)
-				.ToArray();
-			var genArgs = genericParams[0].ParameterType.GetGenericArguments();
-			if (genArgs.Length == 1) {
-				var ctorParam = Activator.CreateInstance(GenericProfileType.MakeGenericType(genArgs[0]), new object?[] {this});
-				typesForDefaultMap.Remove(genArgs[0]);
-				methodInfo.Invoke(instance, new object?[] {ctorParam});
+		var objectInterfaces = objectType.GetInterfaces().ToList();
+		foreach (var interfaceType in objectInterfaces.Where(x => x.IsGenericType)) {
+			var genericTypeDef = interfaceType.GetGenericTypeDefinition();
+			var typeOfMapPartner = interfaceType.GenericTypeArguments[0];
+			TypeManageDto manageDto = new(objectType, typeOfMapPartner);
+			if (genericTypeDef == typeof(IMapWith<>)) {
+				InvokeOverrideOrDefaultMapping(manageDto, nameof(IMapWith<object>.Map),
+					() => this.CreateMap(objectType, typeOfMapPartner).ReverseMap());
+			}
+			else if (genericTypeDef == typeof(IMapTo<>)) {
+				InvokeOverrideOrDefaultMapping(manageDto, nameof(IMapTo<object>.MapTo),
+					() => this.CreateMap(objectType, typeOfMapPartner));
+			}
+			else if (genericTypeDef == typeof(IMapFrom<>)) {
+				InvokeOverrideOrDefaultMapping(manageDto, nameof(IMapFrom<object>.MapFrom),
+					() => this.CreateMap(typeOfMapPartner, objectType));
 			}
 		}
+	}
 
-		// create map by default, if no Map() method override presented
-		foreach (Type type in typesForDefaultMap)
-			if (type != interfacedObjectType)
-				CreateMap(type, interfacedObjectType);
+	private void InvokeOverrideOrDefaultMapping(
+		TypeManageDto manageDto,
+		string mapMethodName,
+		Func<IMappingExpression> defaultMapMethod)
+	{
+		// if mapping method is not implemented use default and simpliest mapping
+		if (GetMapMethod(manageDto.MainObjectType, manageDto.TypeOfMapPartner, mapMethodName) is var mapMethod && mapMethod is null) {
+			defaultMapMethod.Invoke();
+		}
+		else {
+			var instance = manageDto.MainObjectType.IsValueType || manageDto.MainObjectType.GetConstructor(Type.EmptyTypes) != null 
+				? Activator.CreateInstance(manageDto.MainObjectType) : null;
+			mapMethod.Invoke(instance, new object?[] {
+				Activator.CreateInstance(GenericProfileType.MakeGenericType(manageDto.TypeOfMapPartner), new object?[] {this})
+			});
+		}
+	}
+
+	/// <summary>
+	/// Get Map Method Information Object to call it from instance
+	/// </summary>
+	/// <param name="objectType">Type of main object</param>
+	/// <param name="mapPartnerType">objectType partner in mapping</param>
+	/// <param name="mapMethodName">name of the map method (because we have three interfaces with different map method names)</param>
+	private static MethodInfo? GetMapMethod(Type objectType, Type mapPartnerType, string mapMethodName)
+	{
+		var mapMethod = objectType.GetMethods()
+			.Where(m => 
+				m.Name == mapMethodName
+				&& m.GetParameters()
+					.Where(z => 
+						z.ParameterType.IsGenericType).ToArray()[0]
+						.ParameterType.GenericTypeArguments[0] == mapPartnerType
+				)
+			.SingleOrDefault();
+		return mapMethod;
 	}
 }

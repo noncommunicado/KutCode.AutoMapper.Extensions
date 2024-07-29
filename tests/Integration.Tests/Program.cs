@@ -27,7 +27,8 @@ app.MapGet("/map-from-model", (IMapper autoMapper) => {
 
 app.Run();
 
-
+public interface ISomeDummyTestInterface {}
+public interface ISomeDummyTestInterface<T> {}
 public class DataEntity
 {
 	public string Value { get; set; }
@@ -38,11 +39,9 @@ public class DataModel
 	public string Value { get; set; }
 }
 
-public class DataDto : IMapTo<DataEntity>, IMapTo<DataModel>
+public class DataDto : 
+	IMapFrom<DataEntity>, IMapWith<DataModel>,
+	ISomeDummyTestInterface, ISomeDummyTestInterface<object>
 {
 	public string Value { get; set; }
-	public void Map(MapProfileDecorator<DataEntity> decorator)
-	{
-		decorator.Profile.CreateMap<DataEntity, DataDto>();
-	}
 }

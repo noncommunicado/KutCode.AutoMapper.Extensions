@@ -27,12 +27,12 @@ public class NestingMappingsTests
 		public int Counter { get; set; } = 100;
 	}
 	
-	public record ParentDto : IMapTo<ParentEntity>
+	public record ParentDto : IMapFrom<ParentEntity>
 	{
 		public string Value { get; set; }
 		public NestedDto Nested { get; set; }
 	}
-	public record NestedDto : IMapTo<NestedEntity>
+	public record NestedDto : IMapFrom<NestedEntity>
 	{
 		public int Counter { get; set; }
 	}
