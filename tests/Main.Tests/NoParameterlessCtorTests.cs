@@ -4,7 +4,7 @@ namespace Main.Tests;
 public class NoParameterlessCtorTests
 {
 	[Test]
-	public void ParameterlessCtorType_Exception()
+	public void ParameterlessCtorType_NotNull()
 	{
 		AssemblyMappingProfile profile = new(typeof(Dto));
 		IMapper mapper = new Mapper(new MapperConfiguration(c => {
@@ -13,7 +13,7 @@ public class NoParameterlessCtorTests
 
 		var model = mapper.Map<Dto>(Model.Some);
 
-		model.Should().BeNull();
+		model.Should().NotBeNull();
 	} 
 	public class Model
 	{
@@ -28,6 +28,10 @@ public class NoParameterlessCtorTests
 	public class Dto : IMapWith<Model>
 	{
 		public string Value { get; set; }
-		private Dto() { }
+
+		private Dto()
+		{
+			
+		}
 	}
 }
