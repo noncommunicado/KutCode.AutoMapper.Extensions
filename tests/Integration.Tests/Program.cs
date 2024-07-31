@@ -1,6 +1,6 @@
 global using AutoMapper;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAllMappings(); // <----- just add this
 builder.Services.AddEndpointsApiExplorer();
