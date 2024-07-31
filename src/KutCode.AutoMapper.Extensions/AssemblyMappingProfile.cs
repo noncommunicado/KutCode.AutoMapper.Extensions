@@ -2,7 +2,6 @@ using System.Reflection;
 
 namespace AutoMapper;
 
-
 /// <summary>
 /// Profile with all assembly's profiles
 /// </summary>

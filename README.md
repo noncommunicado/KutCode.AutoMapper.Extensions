@@ -25,6 +25,7 @@ All versions can be found [here](https://www.nuget.org/packages/KutCode.AutoMapp
 
 ## 🚀 Quick Start
 
+### Basic example
 Lets declare two types:
 ```csharp
 public class SomeEntity
@@ -51,13 +52,40 @@ So, that's all, now you can map with AutoMapper's `IMapper` as usual:
 ```csharp
 SomeDto dto = mapper.Map<SomeEntity>(entity);
 ```
-Notice, that:  
-Interface `IMapWith<T>` creates `.ReverseMap()`, whereas, you can also use:  
-- `IMapFrom<T>` create default map from `T` to implementing class 
-- `IMapTo<T>` create default map from implementing class to `T`
+### `IMapFrom<T>` and `IMapTo<T>`
+⚠️ Whereas, you can also use those interfaces, which just calls `CreateMap()` if not overrided:
+- `IMapFrom<T>` create map from `T` to implementing class
+- `IMapTo<T>` create map from implementing class to `T`
 
-⚠️ Of course, that's not all. You can also override map methods.
+### Override default mapping
+If you just inherite interface `IMapWith<T>` - that will created `.ReverseMap()` for two types.  
+So, you can override default mapping, and set your own behaviour:
+```csharp
+public class SomeDto : IMapWith<SomeEntity>
+{
+    public string Value { get;set; }
+    // override Map method
+    public void Map(MapProfileDecorator<SomeEntity> decorator)
+    {
+        decorator.Profile.CreateMap<DataDto, DataEntity>()
+            .ForMember(m => m.Value, opt 
+                => opt.MapFrom(f => "SomeOverride")
+            );
+    }
+}
+```
+
+### Conclusion
+
+- Use `IMapWith<T>` for reverse mapping
+- Use `IMapFrom<T>` to map from `T` to an implementing type
+- Use `IMapTo<T>` to map from an implementing type to `T`
+
+All of these interfaces allow you to override the `Map(MapProfileDecorator<T>)` method to customize the mapping.
 
 
+## ☕ Contribution
 
-
+If you wanna to buy me a coffee, send any tokens in TON network:  
+💎 `noncommunicado.ton`  
+💎 `UQD0zFgp0p-eFnbL4cPA6DYqoeWzGbCA81KuU6BKwdFmf8jv`
