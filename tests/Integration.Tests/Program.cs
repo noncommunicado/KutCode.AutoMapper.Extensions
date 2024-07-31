@@ -40,8 +40,18 @@ public class DataModel
 }
 
 public class DataDto : 
-	IMapFrom<DataEntity>, IMapWith<DataModel>,
+	IMapFrom<DataEntity>, 
+	IMapTo<DataEntity>, 
+	IMapWith<DataModel>,
 	ISomeDummyTestInterface, ISomeDummyTestInterface<object>
 {
 	public string Value { get; set; }
+
+	public void Map(MapProfileDecorator<DataEntity> decorator)
+	{
+		decorator.Profile.CreateMap<DataDto, DataEntity>()
+			.ForMember(m => m.Value, opt 
+				=> opt.MapFrom(f => "SomeOverride")
+			);
+	}
 }

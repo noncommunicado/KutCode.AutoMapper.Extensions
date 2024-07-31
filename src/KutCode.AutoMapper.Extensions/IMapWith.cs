@@ -7,7 +7,8 @@ namespace AutoMapper;
 public interface IMapWith<TMember>
 {
 	/// <summary>
-	/// Adds Reverse mapping to <see cref="decorator.Profile"/>
+	/// By default adds Reverse mapping to map-profile;
+	/// Override it, for customize mapping
 	/// </summary>
 	/// <param name="decorator">Decorated Map Profile</param>
 	public void Map(MapProfileDecorator<TMember> decorator)
@@ -18,25 +19,9 @@ public interface IMapWith<TMember>
 /// With applying of this interface, applying default AutoMapper CreateMap() from TDestination to Object Type
 /// </summary>
 /// <typeparam name="TSource">Destination type</typeparam>
-public interface IMapFrom<TSource> : IMapWith<TSource>
-{
-	/// <summary>
-	/// Adds Mapping to <see cref="decorator.Profile"/> Map Profile
-	/// </summary>
-	/// <param name="decorator">Decorated Map Profile</param>
-	public void MapFrom(MapProfileDecorator<TSource> decorator)
-		=> decorator.Profile.CreateMap(typeof(TSource), GetType());
-}
+public interface IMapFrom<TSource> : IMapWith<TSource> {}
 /// <summary>
 /// With applying of this interface, applying default AutoMapper CreateMap() from Object Type to TDestination
 /// </summary>
 /// <typeparam name="TDestination">Destination type</typeparam>
-public interface IMapTo<TDestination> : IMapWith<TDestination>
-{
-	/// <summary>
-	/// Adds Mapping to <see cref="decorator.Profile"/> Map Profile
-	/// </summary>
-	/// <param name="decorator">Decorated Map Profile</param>
-	public void MapTo(MapProfileDecorator<TDestination> decorator)
-		=> decorator.Profile.CreateMap(GetType(), typeof(TDestination));
-}
+public interface IMapTo<TDestination> : IMapWith<TDestination> {}

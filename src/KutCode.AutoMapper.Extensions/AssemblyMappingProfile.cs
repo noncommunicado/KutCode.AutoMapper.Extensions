@@ -19,44 +19,30 @@ internal class AssemblyMappingProfile : Profile
 			ManageTypeMapping(type);
 	}
 	
-	private sealed record TypeManageDto(Type MainObjectType, Type TypeOfMapPartner);
 	private void ManageTypeMapping(Type objectType)
 	{
 		var objectInterfaces = objectType.GetInterfaces().ToList();
 		foreach (var interfaceType in objectInterfaces.Where(x => x.IsGenericType)) {
 			var genericTypeDef = interfaceType.GetGenericTypeDefinition();
 			var typeOfMapPartner = interfaceType.GenericTypeArguments[0];
-			TypeManageDto manageDto = new(objectType, typeOfMapPartner);
 			if (genericTypeDef == typeof(IMapWith<>)) {
-				InvokeOverrideOrDefaultMapping(manageDto, nameof(IMapWith<object>.Map),
-					() => this.CreateMap(objectType, typeOfMapPartner).ReverseMap());
+				if (GetMapMethod(objectType, typeOfMapPartner, nameof(IMapWith<object>.Map)) is var mapMethod && mapMethod is null) {
+					this.CreateMap(objectType, typeOfMapPartner).ReverseMap();
+				}
+				else {
+					var instance = objectType.IsValueType || objectType.GetConstructor(Type.EmptyTypes) != null 
+						? Activator.CreateInstance(objectType) : null;
+					mapMethod.Invoke(instance, new object?[] {
+						Activator.CreateInstance(GenericProfileType.MakeGenericType(typeOfMapPartner), new object?[] {this})
+					});
+				}
 			}
 			else if (genericTypeDef == typeof(IMapTo<>)) {
-				InvokeOverrideOrDefaultMapping(manageDto, nameof(IMapTo<object>.MapTo),
-					() => this.CreateMap(objectType, typeOfMapPartner));
+				this.CreateMap(objectType, typeOfMapPartner);
 			}
 			else if (genericTypeDef == typeof(IMapFrom<>)) {
-				InvokeOverrideOrDefaultMapping(manageDto, nameof(IMapFrom<object>.MapFrom),
-					() => this.CreateMap(typeOfMapPartner, objectType));
+				this.CreateMap(typeOfMapPartner, objectType);
 			}
-		}
-	}
-
-	private void InvokeOverrideOrDefaultMapping(
-		TypeManageDto manageDto,
-		string mapMethodName,
-		Func<IMappingExpression> defaultMapMethod)
-	{
-		// if mapping method is not implemented use default and simpliest mapping
-		if (GetMapMethod(manageDto.MainObjectType, manageDto.TypeOfMapPartner, mapMethodName) is var mapMethod && mapMethod is null) {
-			defaultMapMethod.Invoke();
-		}
-		else {
-			var instance = manageDto.MainObjectType.IsValueType || manageDto.MainObjectType.GetConstructor(Type.EmptyTypes) != null 
-				? Activator.CreateInstance(manageDto.MainObjectType) : null;
-			mapMethod.Invoke(instance, new object?[] {
-				Activator.CreateInstance(GenericProfileType.MakeGenericType(manageDto.TypeOfMapPartner), new object?[] {this})
-			});
 		}
 	}
 
