@@ -4,7 +4,7 @@
 - Configure Mappings in the type definition
 - Use inheritance of interfaces for "default" mappings, without complex rules
 
-## 📜 Install
+## 📜 Installation
 
 `KutCode.AutoMapper.Extensions` is designed with `net7.0`, `net8.0` and higher.
 
@@ -24,9 +24,8 @@ All versions can be found [here](https://www.nuget.org/packages/KutCode.AutoMapp
 
 
 ## 🚀 Quick Start
-
 ### Basic example
-Lets declare two types:
+Let's declare two types:
 ```csharp
 public class SomeEntity
 {
@@ -50,13 +49,15 @@ builder.Services.AddMappings(typeof(Program).Assembly, typeof(Domain).Assembly);
 ```
 So, that's all, now you can map with AutoMapper's `IMapper` as usual:
 ```csharp
-SomeDto dto = mapper.Map<SomeEntity>(entity);
+SomeDto dto = mapper.Map<SomeDto>(entity);
 ```
+----
 ### `IMapFrom<T>` and `IMapTo<T>`
 ⚠️ Whereas, you can also use those interfaces, which just calls `CreateMap()` if not overrided:
 - `IMapFrom<T>` create map from `T` to implementing class
 - `IMapTo<T>` create map from implementing class to `T`
 
+----
 ### Override default mapping
 If you just inherite interface `IMapWith<T>` - that will created `.ReverseMap()` for two types.  
 So, you can override default mapping, and set your own behaviour:
@@ -74,8 +75,20 @@ public class SomeDto : IMapWith<SomeEntity>
     }
 }
 ```
+----
+### Use multiple interfaces
+```csharp
+public class SomeDto : IMapWith<SomeEntity>,
+    IMapTo<AnotherOne>, IMapFrom<AndAnotherOne>
+{
+    public string Value { get;set; }
+    
+    // also overrides available for all intrfaces
+}
+```
+----
 
-### Conclusion
+## ✨ Conclusion
 
 - Use `IMapWith<T>` for reverse mapping
 - Use `IMapFrom<T>` to map from `T` to an implementing type
