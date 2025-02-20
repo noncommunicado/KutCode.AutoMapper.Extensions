@@ -6,7 +6,7 @@
 
 ## 📜 Installation
 
-`KutCode.AutoMapper.Extensions` is designed with `net7.0`, `net8.0` and higher.
+`KutCode.AutoMapper.Extensions` is designed with `net7.0` and higher.
 
 Install `KutCode.AutoMapper.Extensions` using NuGet Package Manager:
 
