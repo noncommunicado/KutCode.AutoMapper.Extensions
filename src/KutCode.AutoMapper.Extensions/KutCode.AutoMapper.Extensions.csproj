@@ -3,21 +3,23 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net9.0;net8.0;net7.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>Configure Mapping In Object Declaration</Title>
         <Description>Easy way to configure mapping profiles inside Type declaration.</Description>
-        <Copyright>KutCode 2024</Copyright>
+        <Copyright>KutCode 2025</Copyright>
         <PackageProjectUrl>https://github.com/hamaronooo/KutCode.AutoMapper.Extensions</PackageProjectUrl>
         <PackageLicenseUrl>https://opensource.org/license/mit</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/hamaronooo/KutCode.AutoMapper.Extensions</RepositoryUrl>
         <PackageTags>AutoMapper</PackageTags>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <FileVersion>1.0.0</FileVersion>
+        <AssemblyVersion>1.1.0</AssemblyVersion>
+        <FileVersion>1.1.0</FileVersion>
         <NeutralLanguage>en-US</NeutralLanguage>
         <PackageIcon>icon.png</PackageIcon>
         <RootNamespace>AutoMapper</RootNamespace>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>1.1.0</Version>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
@@ -29,8 +31,14 @@
       <PackageReference Include="AutoMapper" Version="13.0.1" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="AutoMapper" Version="14.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.2" />
+    </ItemGroup>
     
     <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="" />
         <None Include="images\icon.png" Pack="true" PackagePath=""/>
     </ItemGroup>
 </Project>
