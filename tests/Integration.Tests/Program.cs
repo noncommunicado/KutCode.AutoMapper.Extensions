@@ -2,7 +2,7 @@ global using AutoMapper;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddAllMappings(); // <----- just add this
+builder.Services.AddAllMappings(catchDefaultProfiles: true); // <----- just add this
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -40,16 +40,16 @@ public class DataModel
 }
 
 public class DataDto : 
-	IMapFrom<DataEntity>, 
-	IMapTo<DataEntity>, 
+	IHaveMap,
+	IMapTo<DataEntity>,
 	IMapWith<DataModel>,
 	ISomeDummyTestInterface, ISomeDummyTestInterface<object>
 {
 	public string Value { get; set; }
-
-	public void Map(MapProfileDecorator<DataEntity> decorator)
+	
+	public static void Map(Profile profile)
 	{
-		decorator.Profile.CreateMap<DataDto, DataEntity>()
+		profile.CreateMap<DataDto, DataEntity>()
 			.ForMember(m => m.Value, opt 
 				=> opt.MapFrom(f => "SomeOverride")
 			);

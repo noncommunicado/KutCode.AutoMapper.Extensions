@@ -3,65 +3,79 @@ using System.Reflection;
 namespace AutoMapper;
 
 /// <summary>
-/// Profile with all assembly's profiles
+/// Profile that configures AutoMapper mappings based on interfaces
 /// </summary>
 internal class AssemblyMappingProfile : Profile
 {
-	public static Type GenericProfileType = typeof(MapProfileDecorator<>);
+	private static readonly Type GenericMapWith = typeof(IMapWith<>);
+	private static readonly Type GenericMapTo = typeof(IMapTo<>);
+	private static readonly Type GenericMapFrom = typeof(IMapFrom<>);
+	private static readonly Type HaveMap = typeof(IHaveMap);
 	
 	/// <summary>
-	/// Scan assembly and sum all profiles in one
+	/// Creates a profile with mappings from the provided types
 	/// </summary>
-	public AssemblyMappingProfile(params Type[] types)
+	/// <param name="types">Types to scan for mapping interfaces</param>
+	public AssemblyMappingProfile(params Type[] types) : this((IEnumerable<Type>)types)
 	{
-		foreach (var type in types)
-			ManageTypeMapping(type);
 	}
 	
-	private void ManageTypeMapping(Type objectType)
+	/// <summary>
+	/// Creates a profile with mappings from the provided types
+	/// </summary>
+	/// <param name="types">Types to scan for mapping interfaces</param>
+	public AssemblyMappingProfile(IEnumerable<Type> types)
 	{
-		var objectInterfaces = objectType.GetInterfaces().ToList();
-		foreach (var interfaceType in objectInterfaces.Where(x => x.IsGenericType)) {
-			var genericTypeDef = interfaceType.GetGenericTypeDefinition();
-			var typeOfMapPartner = interfaceType.GenericTypeArguments[0];
-			if (genericTypeDef == typeof(IMapWith<>)) {
-				if (GetMapMethod(objectType, typeOfMapPartner, nameof(IMapWith<object>.Map)) is var mapMethod && mapMethod is null) {
-					this.CreateMap(objectType, typeOfMapPartner).ReverseMap();
-				}
-				else {
-					var instance = objectType.IsValueType || objectType.GetConstructor(Type.EmptyTypes) != null 
-						? Activator.CreateInstance(objectType) : null;
-					mapMethod.Invoke(instance, new object?[] {
-						Activator.CreateInstance(GenericProfileType.MakeGenericType(typeOfMapPartner), new object?[] {this})
-					});
-				}
+		foreach (var type in types)
+		{
+			HandleMapping(type);
+		}
+	}
+	
+	private void HandleMapping(Type objectType)
+	{
+		// Get all implemented interfaces to check for mapping interfaces
+		var objectInterfaces = objectType.GetInterfaces();
+		
+		foreach (var interfaceType in objectInterfaces)
+		{
+			if (interfaceType.IsGenericType)
+			{
+				var genericTypeDef = interfaceType.GetGenericTypeDefinition();
+				var typeOfMapPartner = interfaceType.GenericTypeArguments.FirstOrDefault();
+				
+				if (typeOfMapPartner == null)
+					continue;
+					
+				if (genericTypeDef == GenericMapWith)
+					CreateMap(objectType, typeOfMapPartner).ReverseMap();
+				else if (genericTypeDef == GenericMapTo)
+					CreateMap(objectType, typeOfMapPartner);
+				else if (genericTypeDef == GenericMapFrom)
+					CreateMap(typeOfMapPartner, objectType);
 			}
-			else if (genericTypeDef == typeof(IMapTo<>)) {
-				this.CreateMap(objectType, typeOfMapPartner);
-			}
-			else if (genericTypeDef == typeof(IMapFrom<>)) {
-				this.CreateMap(typeOfMapPartner, objectType);
+			else if (interfaceType.IsAssignableTo(HaveMap))
+			{
+				HandleCustomMapping(objectType);
 			}
 		}
 	}
 
-	/// <summary>
-	/// Get Map Method Information Object to call it from instance
-	/// </summary>
-	/// <param name="objectType">Type of main object</param>
-	/// <param name="mapPartnerType">objectType partner in mapping</param>
-	/// <param name="mapMethodName">name of the map method (because we have three interfaces with different map method names)</param>
-	private static MethodInfo? GetMapMethod(Type objectType, Type mapPartnerType, string mapMethodName)
+	private void HandleCustomMapping(Type objectType)
 	{
-		var mapMethod = objectType.GetMethods()
-			.Where(m => 
-				m.Name == mapMethodName
-				&& m.GetParameters()
-					.Where(z => 
-						z.ParameterType.IsGenericType).ToArray()[0]
-						.ParameterType.GenericTypeArguments[0] == mapPartnerType
-				)
-			.SingleOrDefault();
-		return mapMethod;
+		// Find the Map method using reflection
+		MethodInfo? mapMethod = objectType.GetMethod(
+			nameof(IHaveMap.Map),
+			BindingFlags.Static | BindingFlags.Public,
+			binder: null,
+			types: [typeof(Profile)],
+			modifiers: null
+		);
+		
+		if (mapMethod is null)
+			return;
+		
+		// Invoke the Map method to configure the mappings
+		mapMethod.Invoke(null, [this]);
 	}
 }

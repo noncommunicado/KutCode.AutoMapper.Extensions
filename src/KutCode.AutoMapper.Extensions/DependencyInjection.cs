@@ -4,61 +4,80 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AutoMapper;
 
 /// <summary>
-/// Default container injections
+/// Extension methods for setting up AutoMapper in an <see cref="IServiceCollection" />
 /// </summary>
 public static class DependencyInjection
 {
-	private static Type _iMapWith = typeof(IMapWith<>);
-
+	private static readonly Type MapWith = typeof(IMapWith<>);
+	
 	/// <summary>
-	/// Add all profiles from Application Domain assemblies
+	/// Adds AutoMapper with profiles from all Application Domain assemblies
 	/// </summary>
 	/// <param name="services">A collection of service descriptors</param>
 	/// <param name="configAction">Configuration action to specify configuration of AutoMapper</param>
-	public static IServiceCollection AddAllMappings(this IServiceCollection services, Action<IMapperConfigurationExpression>? configAction = null)
+	/// <param name="catchDefaultProfiles">Should register default Profiles, written in default AutoMapper way</param>
+	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
+	public static IServiceCollection AddAllMappings(
+		this IServiceCollection services,
+		Action<IMapperConfigurationExpression>? configAction = null,
+		bool catchDefaultProfiles = false)
 	{
-		return AddMappings(services, configAction, AppDomain.CurrentDomain.GetAssemblies());
+		return AddMappings(services, configAction, catchDefaultProfiles, AppDomain.CurrentDomain.GetAssemblies());
 	}
 
 	/// <summary>
-	/// Add sprecified profiles from assemblies
+	/// Adds AutoMapper with profiles from specified assemblies
 	/// </summary>
 	/// <param name="services">A collection of service descriptors</param>
-	/// <param name="assemblies">Assemblies to scan object inhirited from <see cref="IMapTo{TDestination}"/></param>
+	/// <param name="assemblies">Assemblies to scan</param>
+	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
 	public static IServiceCollection AddMappings(this IServiceCollection services, params Assembly[] assemblies)
 	{
-		return services.AddMappings(configAction: null, assemblies);
+		return AddMappings(services, null, false, assemblies);
 	}
 
 	/// <summary>
-	/// Add sprecified profiles from assemblies
+	/// Adds AutoMapper with profiles from specified assemblies with additional configuration
 	/// </summary>
 	/// <param name="services">A collection of service descriptors</param>
-	/// <param name="assemblies">Assemblies to scan object inhirited from <see cref="IMapTo{TDestination}"/></param>
-	public static IServiceCollection AddMappings(this IServiceCollection services, Action<IMapperConfigurationExpression>? configAction = null, params Assembly[] assemblies)
+	/// <param name="additionalConfigAction">Additional config action which will be executed after all others</param>
+	/// <param name="catchDefaultProfiles">Should register default Profiles, written in default AutoMapper way</param>
+	/// <param name="assemblies">Assemblies to scan</param>
+	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
+	public static IServiceCollection AddMappings(
+		this IServiceCollection services,
+		Action<IMapperConfigurationExpression>? additionalConfigAction = null,
+		bool catchDefaultProfiles = false,
+		params Assembly[] assemblies)
 	{
-		services.AddAutoMapper(cfg =>{
+		services.AddAutoMapper(cfg => {
 			foreach (var assembly in assemblies) {
-				var types = assembly.GetExportedTypes()
-					.Where(x => x.IsInterface == false)
+				var types = assembly.GetExportedTypes();
+
+				var interfaces = types.Where(x => x.IsInterface == false)
 					.Where(type => type.GetInterfaces()
-						.Any(i => i.IsGenericType && i.GetGenericTypeDefinition().IsAssignableFrom(_iMapWith)))
-					
+						.Any(i => i.IsGenericType && i.GetGenericTypeDefinition().IsAssignableFrom(MapWith)))
 					.ToArray();
-				if (types.Length == 0) continue;
-				cfg.AddProfile(new AssemblyMappingProfile(types));
+				if (interfaces.Length == 0) continue;
+				cfg.AddProfile(new AssemblyMappingProfile(interfaces));
+
+				if (catchDefaultProfiles)
+					cfg.AddMaps(assembly);
 			}
-			if (configAction is not null)
-				configAction.Invoke(cfg);
+
+			if (additionalConfigAction is not null)
+				additionalConfigAction.Invoke(cfg);
 		});
 		
 		return services;
 	}
 
 	/// <summary>
-	/// Add AutoMapper with explicit configuration in configAction
+	/// Adds AutoMapper with explicit configuration
 	/// </summary>
+	/// <param name="services">A collection of service descriptors</param>
 	/// <param name="configAction">Configuration action</param>
+	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
 	public static IServiceCollection AddMappings(this IServiceCollection services, Action<IMapperConfigurationExpression> configAction)
 	{
 		services.AddAutoMapper(configAction);

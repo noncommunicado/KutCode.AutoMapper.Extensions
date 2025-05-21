@@ -5,34 +5,34 @@ namespace Main.Tests.MapTo;
 public class ConflictMappingTests
 {
 	[Test]
-	public void TwoSimmilarMappings_ErrorThrowing()
+	public void TwoSimmilarMappings_ErrorNotThrowing()
 	{
 		AssemblyMappingProfile profile = new(typeof(ParentDto), typeof(ParentEntity));
 		IMapper mapper = new Mapper(new MapperConfiguration(c => {
 			c.AddProfile(profile);
 		}));
 		var mapped = mapper.Map<ParentDto>(new ParentEntity());
+		mapped.Value.Should().NotBeNullOrEmpty();
 		Assert.Pass();
 	}
 	
-	public class ParentEntity : IMapFrom<ParentEntity>
+	public class ParentEntity : IHaveMap
 	{
 		public string Value { get; set; } = "parent";
 
-		public void MapFrom(MapProfileDecorator<ParentEntity> decorator)
+		public static void Map(Profile profile)
 		{
-			decorator.Profile.CreateMap<ParentEntity, ParentDto>().ForMember(x => x.Value,
+			profile.CreateMap<ParentEntity, ParentDto>().ForMember(x => x.Value,
 				opt => opt.MapFrom(z => "1111"));
 		}
 	}
-	public record ParentDto : IMapFrom<ParentEntity>
+	public record ParentDto : IHaveMap
 	{
 		public string Value { get; set; }
 
-
-		public void MapFrom(MapProfileDecorator<ParentEntity> decorator)
+		public static void Map(Profile profile)
 		{
-			decorator.Profile.CreateMap<ParentEntity, ParentDto>().ForMember(x => x.Value,
+			profile.CreateMap<ParentEntity, ParentDto>().ForMember(x => x.Value,
 				opt => opt.MapFrom(z => "2222"));
 		}
 	}

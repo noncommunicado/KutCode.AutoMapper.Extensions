@@ -1,27 +1,33 @@
 namespace AutoMapper;
 
 /// <summary>
-/// Simple interface, for Reverse two-side mapping   
-/// Also, provides base interface for IMapFrom and IMapTo interfaces
+/// Interface for types that provide custom mapping configurations
 /// </summary>
-public interface IMapWith<TMember>
+public interface IHaveMap
 {
-	/// <summary>
-	/// By default adds Reverse mapping to map-profile;
-	/// Override it, for customize mapping
-	/// </summary>
-	/// <param name="decorator">Decorated Map Profile</param>
-	public void Map(MapProfileDecorator<TMember> decorator)
-		=> decorator.Profile.CreateMap(typeof(TMember), GetType()).ReverseMap();
+    /// <summary>
+    /// Static method to configure custom mappings with Profile
+    /// </summary>
+    /// <param name="profile">Map Profile for configuring custom mappings</param>
+    static abstract void Map(Profile profile);
 }
 
 /// <summary>
-/// With applying of this interface, applying default AutoMapper CreateMap() from TDestination to Object Type
+/// Base interface for mapping between types.
+/// Implementing this interface creates a two-way mapping (with ReverseMap).
+/// Serves as a base interface for <see cref="IMapFrom{TSource}"/> and <see cref="IMapTo{TDestination}"/> interfaces.
 /// </summary>
-/// <typeparam name="TSource">Destination type</typeparam>
-public interface IMapFrom<TSource> : IMapWith<TSource> {}
+/// <typeparam name="TMember">The type to map with</typeparam>
+public interface IMapWith<TMember>;
+
 /// <summary>
-/// With applying of this interface, applying default AutoMapper CreateMap() from Object Type to TDestination
+/// Interface that creates a mapping from <typeparamref name="TSource"/> to the implementing type.
 /// </summary>
-/// <typeparam name="TDestination">Destination type</typeparam>
+/// <typeparam name="TSource">The source type to map from</typeparam>
+public interface IMapFrom<TSource> : IMapWith<TSource> {}
+
+/// <summary>
+/// Interface that creates a mapping from the implementing type to <typeparamref name="TDestination"/>.
+/// </summary>
+/// <typeparam name="TDestination">The destination type to map to</typeparam>
 public interface IMapTo<TDestination> : IMapWith<TDestination> {}

@@ -12,6 +12,7 @@
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="7.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
         <PackageReference Include="NUnit" Version="4.3.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
         <PackageReference Include="NUnit.Analyzers" Version="4.7.0">
@@ -28,4 +29,4 @@
       <ProjectReference Include="..\..\src\KutCode.AutoMapper.Extensions\KutCode.AutoMapper.Extensions.csproj" />
     </ItemGroup>
 
-</Project>
+</Project> 

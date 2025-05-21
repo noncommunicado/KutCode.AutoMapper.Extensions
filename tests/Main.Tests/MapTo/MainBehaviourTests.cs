@@ -30,13 +30,13 @@ public class MainBehaviourTests
 		public string Value { get; set; }
 	}
 	public interface ISomeInterface { }
-	public class TestDto : IMapFrom<TestEntity>, IMapFrom<TestModel>, ISomeInterface
+	public class TestDto : IMapFrom<TestEntity>, IHaveMap, ISomeInterface
 	{
 		public string Value { get; set; }
 
-		public void Map(MapProfileDecorator<TestModel> decorator)
+		public static void Map(Profile profile)
 		{
-			decorator.Profile.CreateMap<TestModel, TestDto>()
+			profile.CreateMap<TestModel, TestDto>()
 				.ForMember(x => x.Value, opt => 
 					opt.MapFrom(x => "SomeOverride"));
 		}
