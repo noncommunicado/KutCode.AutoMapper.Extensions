@@ -3,8 +3,8 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TargetFrameworks>net9.0;net8.0;net7.0</TargetFrameworks>
-        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+        <LangVersion>preview</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>Configure Mapping In Object Declaration</Title>
         <Description>Easy way to configure mapping profiles inside Type declaration.</Description>
@@ -13,9 +13,9 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/hamaronooo/KutCode.AutoMapper.Extensions</RepositoryUrl>
         <PackageTags>AutoMapper;Mapping;DependencyInjection</PackageTags>
-        <Version>2.0.1</Version>
-        <FileVersion>2.0.1</FileVersion>
-        <AssemblyVersion>2.0.1</AssemblyVersion>
+        <Version>2.0.2</Version>
+        <FileVersion>2.0.2</FileVersion>
+        <AssemblyVersion>2.0.2</AssemblyVersion>
         <NeutralLanguage>en-US</NeutralLanguage>
         <PackageIcon>icon.png</PackageIcon>
         <RootNamespace>AutoMapper</RootNamespace>
@@ -27,17 +27,17 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-      <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="AutoMapper" Version="13.*" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-      <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="AutoMapper" Version="14.*" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-        <PackageReference Include="AutoMapper" Version="14.0.0" />
+        <PackageReference Include="AutoMapper" Version="14.*" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
     </ItemGroup>
     

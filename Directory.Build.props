@@ -1,5 +1,6 @@
 <Project>
     <PropertyGroup>
+        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <Nullable>annotations</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
