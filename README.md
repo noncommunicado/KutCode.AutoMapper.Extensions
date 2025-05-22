@@ -1,5 +1,7 @@
 # <img src="./img/icon.png" style="width: 40px" /> KutCode.AutoMapper.Extensions
 
+<img src="https://img.shields.io/github/v/tag/noncommunicado/KutCode.AutoMapper.Extensions?include_prereleases&style=flat&label=Version&color=darkgreen" />
+
 .NET library that allows you to:    
 ✅ Configure Mappings in the type declaration  
 ✅ Use inheritance of interfaces for "default" mappings, without complex rules  
