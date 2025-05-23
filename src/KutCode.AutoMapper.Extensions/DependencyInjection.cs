@@ -9,6 +9,7 @@ namespace AutoMapper;
 public static class DependencyInjection
 {
 	private static readonly Type MapWith = typeof(IMapWith<>);
+	private static readonly Type HaveMap = typeof(IHaveMap);
 	
 	/// <summary>
 	/// Adds AutoMapper with profiles from all Application Domain assemblies
@@ -56,7 +57,9 @@ public static class DependencyInjection
 
 				var interfaces = types.Where(x => x.IsInterface == false)
 					.Where(type => type.GetInterfaces()
-						.Any(i => i.IsGenericType && i.GetGenericTypeDefinition().IsAssignableFrom(MapWith)))
+						.Any(i => 
+							(i.IsGenericType && MapWith.IsAssignableFrom(i.GetGenericTypeDefinition())) ||
+							HaveMap.IsAssignableFrom(i)))
 					.ToArray();
 				if (interfaces.Length == 0) continue;
 				cfg.AddProfile(new AssemblyMappingProfile(interfaces));

@@ -11,6 +11,11 @@ internal class AssemblyMappingProfile : Profile
 	private static readonly Type GenericMapTo = typeof(IMapTo<>);
 	private static readonly Type GenericMapFrom = typeof(IMapFrom<>);
 	private static readonly Type HaveMap = typeof(IHaveMap);
+
+	/// <summary>
+	/// Empty constructor support
+	/// </summary>
+	public AssemblyMappingProfile() { }
 	
 	/// <summary>
 	/// Creates a profile with mappings from the provided types
@@ -24,9 +29,9 @@ internal class AssemblyMappingProfile : Profile
 	/// Creates a profile with mappings from the provided types
 	/// </summary>
 	/// <param name="types">Types to scan for mapping interfaces</param>
-	public AssemblyMappingProfile(IEnumerable<Type> types)
+	public AssemblyMappingProfile(IEnumerable<Type>? types)
 	{
-		foreach (var type in types)
+		foreach (var type in types ?? [])
 		{
 			HandleMapping(type);
 		}

@@ -1,42 +1,16 @@
 global using AutoMapper;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddAllMappings(catchDefaultProfiles: true); // <----- just add this
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-app.UseSwagger();
-app.UseSwaggerUI();
-
-app.MapGet("/map-from-entity", (IMapper autoMapper) => {
-		var entity = new DataEntity {Value = "entity-test-data"};
-		return autoMapper.Map<DataDto>(entity);
-	})
-	.WithName("map-from-entity")
-	.WithOpenApi();
-
-app.MapGet("/map-from-model", (IMapper autoMapper) => {
-		var entity = new DataModel {Value = "model-test-data"};
-		return autoMapper.Map<DataDto>(entity);
-	})
-	.WithName("map-from-model")
-	.WithOpenApi();
-
-app.Run();
-
 public interface ISomeDummyTestInterface {}
 public interface ISomeDummyTestInterface<T> {}
+
 public class DataEntity
 {
-	public string Value { get; set; }
+	public string Value { get; set; } = string.Empty;
 }
 
 public class DataModel
 {
-	public string Value { get; set; }
+	public string Value { get; set; } = string.Empty;
 }
 
 public class DataDto : 
@@ -45,7 +19,7 @@ public class DataDto :
 	IMapWith<DataModel>,
 	ISomeDummyTestInterface, ISomeDummyTestInterface<object>
 {
-	public string Value { get; set; }
+	public string Value { get; set; } = string.Empty;
 	
 	public static void Map(Profile profile)
 	{
