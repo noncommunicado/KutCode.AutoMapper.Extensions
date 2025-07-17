@@ -34,7 +34,7 @@ public static class DependencyInjection
 	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
 	public static IServiceCollection AddMappings(this IServiceCollection services, params Assembly[] assemblies)
 	{
-		return AddMappings(services, null, false, assemblies);
+		return AddMappings(services, additionalConfigAction: null, false, assemblies);
 	}
 
 	/// <summary>
@@ -68,9 +68,45 @@ public static class DependencyInjection
 					cfg.AddMaps(assembly);
 			}
 
-			if (additionalConfigAction is not null)
-				additionalConfigAction.Invoke(cfg);
+			additionalConfigAction?.Invoke(cfg);
 		});
+		
+		return services;
+	}
+	
+	/// <summary>
+	/// Adds AutoMapper with profiles from specified assemblies with additional configuration
+	/// </summary>
+	/// <param name="services">A collection of service descriptors</param>
+	/// <param name="additionalConfigActionWithServiceProvider">Additional config action which will be executed after all others</param>
+	/// <param name="catchDefaultProfiles">Should register default Profiles, written in default AutoMapper way</param>
+	/// <param name="assemblies">Assemblies to scan</param>
+	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
+	public static IServiceCollection AddMappings(
+		this IServiceCollection services,
+		Action<IServiceProvider,IMapperConfigurationExpression>? additionalConfigActionWithServiceProvider = null,
+		bool catchDefaultProfiles = false,
+		params Assembly[] assemblies)
+	{
+		services.AddAutoMapper((provider, cfg) => {
+			foreach (var assembly in assemblies) {
+				var types = assembly.GetExportedTypes();
+
+				var interfaces = types.Where(x => x.IsInterface == false)
+					.Where(type => type.GetInterfaces()
+						.Any(i => 
+							(i.IsGenericType && MapWith.IsAssignableFrom(i.GetGenericTypeDefinition())) ||
+							HaveMap.IsAssignableFrom(i)))
+					.ToArray();
+				if (interfaces.Length == 0) continue;
+				cfg.AddProfile(new AssemblyMappingProfile(interfaces));
+
+				if (catchDefaultProfiles)
+					cfg.AddMaps(assembly);
+			}
+
+			additionalConfigActionWithServiceProvider?.Invoke(provider, cfg);
+		}, assemblies);
 		
 		return services;
 	}
