@@ -20,10 +20,10 @@ public static class DependencyInjection
 	/// <returns>The <see cref="IServiceCollection"/> for chaining</returns>
 	public static IServiceCollection AddAllMappings(
 		this IServiceCollection services,
-		Action<IMapperConfigurationExpression>? configAction = null,
+		Action<IServiceProvider,IMapperConfigurationExpression>? additionalConfigActionWithServiceProvider = null,
 		bool catchDefaultProfiles = false)
 	{
-		return AddMappings(services, configAction, catchDefaultProfiles, AppDomain.CurrentDomain.GetAssemblies());
+		return AddMappings(services, additionalConfigActionWithServiceProvider, catchDefaultProfiles, AppDomain.CurrentDomain.GetAssemblies());
 	}
 
 	/// <summary>

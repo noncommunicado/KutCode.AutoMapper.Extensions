@@ -51,7 +51,7 @@ public class AddAllMappingsTests
         var configApplied = false;
 
         // Act - Use the extension method with config
-        services.AddAllMappings(cfg => 
+        services.AddAllMappings((p, cfg) => 
         {
             configApplied = true;
         });

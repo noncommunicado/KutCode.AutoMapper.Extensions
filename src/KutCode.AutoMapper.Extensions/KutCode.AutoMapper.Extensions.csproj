@@ -13,9 +13,9 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/hamaronooo/KutCode.AutoMapper.Extensions</RepositoryUrl>
         <PackageTags>AutoMapper;Mapping;DependencyInjection</PackageTags>
-        <Version>2.2.0</Version>
-        <FileVersion>2.1.0</FileVersion>
-        <AssemblyVersion>2.1.0</AssemblyVersion>
+        <Version>3.0.0</Version>
+        <FileVersion>3.0.0</FileVersion>
+        <AssemblyVersion>3.0.0</AssemblyVersion>
         <NeutralLanguage>en-US</NeutralLanguage>
         <PackageIcon>icon.png</PackageIcon>
         <RootNamespace>AutoMapper</RootNamespace>
